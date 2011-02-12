@@ -59,6 +59,7 @@ class Game {
 		if ($this->has_winner()) return FALSE;
 		if ($song == self::ME_VOY_AL_MAZO) {
 			$this->winner = (int)(!$this->active_player);
+			$this->points[$this->winner] += $this->get_truco_points();
 			return TRUE;
 		}
 
@@ -155,6 +156,7 @@ class Game {
 		if ($c * count($this->played_hands[1]) == 6) {
 			if ($this->played_hands[$c == 3 ? 0 : 1][2] == '1E') {
 				$this->winner = $c == 3 ? 0 : 1;
+				$this->points[$this->winner] += $this->get_truco_points();
 				return TRUE;
 			}
 		}
@@ -167,6 +169,7 @@ class Game {
 			if ($first * $second == -1) return FALSE;
 			if ($first == 0 && $second == 0) return FALSE;
 			$this->winner = $first + $second > 0 ? 1 : 0;
+			$this->points[$this->winner] += $this->get_truco_points();
 			return TRUE;
 		}
 
@@ -176,6 +179,7 @@ class Game {
 			else $this->winner = $this->started;
 		else
 			$this->winner = $third > 0 ? 1 : 0;
+		$this->points[$this->winner] += $this->get_truco_points();
 		return TRUE;
 	}
 }
