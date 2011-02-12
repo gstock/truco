@@ -71,7 +71,10 @@ class Game {
 				}
 			} else if ($this->last_song() >= self::ENVIDO) {
 				if ($song == self::QUIERO) {
-					$this->play_envido();
+					$winner = $this->play_envido();
+					if ($this->count_song(self::FALTA_ENVIDO) > 0) {
+						$this->winner = $winner;
+					}
 				} else {
 					$this->points[(int)(!$this->active_player)] += $this->count_song(self::ENVIDO) + $this->count_song(self::REAL_ENVIDO) + $this->count_song(self::FALTA_ENVIDO);
 				}
@@ -111,6 +114,7 @@ class Game {
 		}
 
 		$this->points[$winner] += $this->count_song(self::ENVIDO) * 2 + $this->count_song(self::REAL_ENVIDO) * 3 + $this->count_song(self::FALTA_ENVIDO) * 30;
+		return $winner;
 	}
 
 	public function play($card) {
