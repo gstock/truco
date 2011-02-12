@@ -6,16 +6,100 @@ class Game {
 	public $started;
 	public $winner;
 
+	public $singed;
+	public $points;
+
+	static public const ENVIDO = 1;
+	static public const REAL_ENVIDO = 2;
+	static public const FALTA_ENVIDO = 3;
+	static public const TRUCO = 4;
+	static public const RETRUCO = 5;
+	static public const VALE_CUATRO = 6;
+	static public const QUIERO = 7;
+	static public const NO_QUIERO = 8;
+	static public const ME_VOY_AL_MAZO = 9;
+
 	public function __construct($hands = array(), $start = 0) {
 		$this->hands = $hands;
 		$this->active_player = $this->started = $start;
 		$this->played_hands = array(array(), array());
+		$this->singed = array();
+		$this->points = array(0,0);
+	}
+
+	private function last_song() {
+		if (count($this->singed) == 0) return NULL;
+		$last = end($this->singed);
+		return $last['song'];
+	}
+
+	private function count_song($song) {
+		$c = 0;
+		foreach ($this->singed as $s) if ($s['song'] == $song) ++$c;
+		return $c;
+	}
+
+	public function get_truco_points() {
+		if ($this->count_song(self::VALE_CUATRO)) return 4;
+		if ($this->count_song(self::RETRUCO)) return 3;
+		if ($this->count_song(self::TRUCO)) return 2;
+		return 1;
+	}
+
+	public function sing($song) {
+		if ($this->has_winner()) return FALSE;
+		if ($song == self::ME_VOY_AL_MAZO) {
+			$this->winner = (int)(!$this->active_player);
+			return TRUE;
+		}
+
+		if ($song >= self::QUIERO) {
+			if ($this->last_song() >= self::QUIERO) return FALSE;
+			if ($this->last_song() >= self::TRUCO) {
+				if ($song == self::NO_QUIERO) {
+					$this->winner = (int)(!$this->active_player);
+					$this->points[$this->winner] += $this->get_truco_points();
+					return TRUE;
+				} else {
+					$this->calculate_active_player();
+				}
+			} else if ($this->last_song() >= self::ENVIDO) {
+				if ($song == self::QUIERO) {
+					$this->play_envido();
+				} else {
+					$this->points[(int)(!$this->active_player)] += 1;
+				}
+				$this->calculate_active_player();
+			} else {
+				return FALSE;
+			}
+		}
+	}
+
+	private function play_envido() {
+		$envidos = array($this->hands[0]->getEnvido(), $this->hands[1]->getEnvido());
+		$winner = NULL;
+		if ($envidos[0] == $envidos[1]) {
+			$winner = $this->started;
+		} else if ($envidos[0] > $envidos[1]) {
+			$winner = 0;
+		} else {
+			$winner = 1;
+		}
+
+		$this->points[$winner] += $this->count_song(self::ENVIDO) * 2 + $this->count_song(self::REAL_ENVIDO) * 3 + $this->count_song(self::FALTA_ENVIDO) * 30;
 	}
 
 	public function play($card) {
+		if ($this->last_song() < self::QUIERO) return FALSE;
 		if ($this->has_winner()) return FALSE;
 		if ($this->hands[$this->active_player]->remove($card) == FALSE) return FALSE;
 		$this->played_hands[$this->active_player][] = $card;
+		$this->calculate_active_player();
+		return TRUE;
+	}
+
+	public function calculate_active_player() {
 		if (count($this->played_hands[0]) != count($this->played_hands[1])) {
 			$this->active_player = (int)(!$this->active_player);
 		} else {
@@ -28,7 +112,6 @@ class Game {
 				else $this->active_player = $this->started;
 			}
 		}
-		return TRUE;
 	}
 
 	public function has_winner() {
