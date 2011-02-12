@@ -162,5 +162,15 @@ assert($game->has_winner() == TRUE);
 assert($game->points[0] >= 30);
 assert($game->points[1] < $game->points[0]);
 
+$game = new Game(array(new PlayerHand('3E', '3C', '4B'), new PlayerHand('3O', '3B', '4C')), 0);
+assert($game->sing(Game::ENVIDO) == TRUE);
+assert($game->sing(Game::QUIERO) == TRUE);
+assert($game->has_winner() == FALSE);
+assert($game->points == array(2,0));
 
+$game = new Game(array(new PlayerHand('3E', '3C', '4B'), new PlayerHand('3O', '3B', '4C')), 1);
+assert($game->sing(Game::ENVIDO) == TRUE);
+assert($game->sing(Game::QUIERO) == TRUE);
+assert($game->has_winner() == FALSE);
+assert($game->points == array(0,2));
 
