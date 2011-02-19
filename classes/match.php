@@ -32,10 +32,12 @@ class Match {
 		if ($this->current_game !== NULL) {
 			$this->points[0] += $this->current_game->point[0];
 			$this->points[1] += $this->current_game->point[1];
+			$started = $this->current_game->started;
+		} else {
+			$started = 1;
 		}
 		if (max($this->points) >= 30) return NULL;
 		$cards = self::get_cards();
-		$started = $this->current_game->started;
 		$this->current_game = new Game(array(new PlayerHand(array_slice($cards,0,3)), new PlayerHand(array_slice($cards,3,3))), (int)(!$started));
 		return $this->current_game;
 	}
