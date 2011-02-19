@@ -11,11 +11,12 @@ class Match {
 	static private function get_cards() {
 		if (self::$cards === NULL) {
 			for ($a = 1; $a <= 10; ++$a) {
-				if ($a == 8) $a = 'J';
-				if ($a == 9) $a = 'Q';
-				if ($a == 10) $a = 'K';
+				$card = $a;
+				if ($card == 8) $card = 'J';
+				if ($card == 9) $card = 'Q';
+				if ($card == 10) $card = 'K';
 				foreach (array('O','C','E','B') as $b)
-					self::$cards[] = $a . $b;
+					self::$cards[] = $card . $b;
 			}
 		}
 		shuffle(self::$cards);
