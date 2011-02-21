@@ -6,6 +6,8 @@ class Match {
 	public $points = array('0' => 0, '1' => 0);
 	public $current_game;
 
+	private $command_stacks = array(0 => array(), 1 => array());
+
 	static private $cards;
 
 	static private function get_cards() {
@@ -25,6 +27,9 @@ class Match {
 
 	public function __construct() {
 		$this->match_id = md5(microtime());
+		foreach (array(0, 1) as $player) {
+			$this->command_stacks[$player][] = array('start' => array('clientId' => $player, 'gameId' => $this->match_id));
+		}
 	}
 
 	public function create_game() {
@@ -38,7 +43,15 @@ class Match {
 		}
 		if (max($this->points) >= 30) return NULL;
 		$cards = self::get_cards();
-		$this->current_game = new Game(array(new PlayerHand(array_slice($cards,0,3)), new PlayerHand(array_slice($cards,3,3))), (int)(!$started));
+		$hands = array(
+			array_slice($cards,0,3),
+			array_slice($cards,3,3)
+		);
+		shuffle(self::$cards); // delete the evidence; unnecesary safe measure
+		$this->current_game = new Game(array(new PlayerHand($hands[0], $hands[1])), (int)(!$started));
+		foreach (array(0, 1) as $player) {
+			$this->command_stacks[$player][] = array('newhand' => array('cards' => $hands[$player], 'points' => $this->points));
+		}
 		return $this->current_game;
 	}
 
@@ -49,11 +62,25 @@ class Match {
 	}
 
 	public function card($card) {
-		return $this->current_game->play($card);
+		$return = $this->current_game->play($card);
+		if ($return) {
+			foreach ($command_stacks as $k => $v) {
+				$v[] = array('card' => $card);
+				$command_stacks[$k] = $v;
+			}
+		}
+		return $return;
 	}
 
 	public function sing($song) {
-		return $this->current_game->sing($song);
+		$return = $this->current_game->sing($song);
+		if ($return) {
+			foreach ($command_stacks as $k => $v) {
+				$v[] = array('sing' => $song);
+				$command_stacks[$k] = $v;
+			}
+		}
+		return $return;
 	}
 
 	public function info($info) {
