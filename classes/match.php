@@ -5,8 +5,11 @@ class Match {
 	public $match_id;
 	public $points = array('0' => 0, '1' => 0);
 	public $current_game;
+	private $winner;
 
 	private $command_stacks = array(0 => array(), 1 => array());
+
+	private static $published_commands = array('card', 'sing', 'info');
 
 	static private $cards;
 
@@ -32,23 +35,36 @@ class Match {
 		}
 	}
 
+	public function get_stack_for_player($player) {
+		$ret = $this->command_stacks[$player];
+		$this->command_stacks[$player] = array();
+		return $ret;
+	}
+
 	public function create_game() {
 		if ($this->current_game !== NULL && $this->current_game->has_winner() == FALSE) return NULL;
 		if ($this->current_game !== NULL) {
-			$this->points[0] += $this->current_game->point[0];
-			$this->points[1] += $this->current_game->point[1];
+			$this->points[0] += $this->current_game->points[0];
+			$this->points[1] += $this->current_game->points[1];
 			$started = $this->current_game->started;
 		} else {
 			$started = 1;
 		}
-		if (max($this->points) >= 30) return NULL;
+		if (max($this->points) >= 30) {
+			if ($this->points[0] != $this->points[1]) {
+				$this->winner = (int)(max($this->points) == $this->points[1]);
+				foreach (array(0, 1) as $player)
+					$this->command_stacks[$player][] = array('finished' => array('winner' => $this->winner));
+				return NULL;
+			}
+		}
 		$cards = self::get_cards();
 		$hands = array(
 			array_slice($cards,0,3),
 			array_slice($cards,3,3)
 		);
 		shuffle(self::$cards); // delete the evidence; unnecesary safe measure
-		$this->current_game = new Game(array(new PlayerHand($hands[0], $hands[1])), (int)(!$started));
+		$this->current_game = new Game(array(new PlayerHand($hands[0]), new PlayerHand($hands[1])), (int)(!$started));
 		foreach (array(0, 1) as $player) {
 			$this->command_stacks[$player][] = array('newhand' => array('cards' => $hands[$player], 'points' => $this->points));
 		}
@@ -64,9 +80,9 @@ class Match {
 	public function card($card) {
 		$return = $this->current_game->play($card);
 		if ($return) {
-			foreach ($command_stacks as $k => $v) {
+			foreach ($this->command_stacks as $k => $v) {
 				$v[] = array('card' => $card);
-				$command_stacks[$k] = $v;
+				$this->command_stacks[$k] = $v;
 			}
 		}
 		return $return;
@@ -87,5 +103,12 @@ class Match {
 		if ($info == 'hand_points')
 			return $this->current_game->points;
 		return NULL;
+	}
+
+	public function process($function) {
+		$method = key($function);
+		if (in_array($method, self::$published_commands)) {
+			$this->$method(current($function));
+		}
 	}
 }

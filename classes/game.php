@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__FILE__) . '/card.php';
+
 class Game {
 	private $hands;
 	public $active_player;
