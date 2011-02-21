@@ -91,9 +91,9 @@ class Match {
 	public function sing($song) {
 		$return = $this->current_game->sing($song);
 		if ($return) {
-			foreach ($command_stacks as $k => $v) {
+			foreach ($this->command_stacks as $k => $v) {
 				$v[] = array('sing' => $song);
-				$command_stacks[$k] = $v;
+				$this->command_stacks[$k] = $v;
 			}
 		}
 		return $return;
