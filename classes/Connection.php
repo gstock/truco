@@ -32,7 +32,7 @@ class Connection
 	}
 	
 	public function connect() {
-		socket_connect($this->socket, $this->address, $this->port);
+		return @socket_connect($this->socket, $this->address, $this->port);
 	}
 	
 	public function listen() {
