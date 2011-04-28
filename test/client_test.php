@@ -1,7 +1,7 @@
 #!/usr/bin/php –q
 <?php
 
-include("Connection.php");
+include("../Classes/Connection.php");
 
 $host="127.0.0.1";
 $port = 4001;

@@ -106,6 +106,7 @@ class Match {
 	}
 
 	public function process($function) {
+		if (!is_array($function)) die('NOT ARRAY');
 		$method = key($function);
 		if (in_array($method, self::$published_commands)) {
 			$this->$method(current($function));

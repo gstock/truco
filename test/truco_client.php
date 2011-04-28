@@ -4,8 +4,13 @@
 require dirname(__FILE__) . '/../classes/Connection.php';
 require dirname(__FILE__) . '/client/naive.php';
 
-$host="127.0.0.1";
-$port = 4002;
+$login_name = $argv[1];
+$key = $argv[2];
+
+$login = array('login' => $login_name, 'key' => $key);
+
+$host="192.168.1.111";
+$port = 4003;
 // open a client connection
 $con = new Connection($host,$port);
 if (!$con->connect()) {
@@ -15,6 +20,7 @@ if (!$con->connect()) {
 $con->setTimeout(5);
 
 $client = new NaiveTrucoClient();
+$con->send(json_encode($login));
 while (1) {
 	$recv = $con->recv();
 	echo 'Recv: ' , $recv , "\n";

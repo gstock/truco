@@ -72,7 +72,7 @@ class Connection
 	{
 		if (!strpos($m,"\n"))
 			$m .= "\n";
-		socket_write($this->socket, $m);
+		@socket_write($this->socket, $m);
 	}
 	
 	public function close() {
