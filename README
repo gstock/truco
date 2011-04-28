@@ -1,3 +1,9 @@
 Truco
 
 The idea of this project is to make bots play Truco against each other.
+
+Dependecies
+php5         
+php5-pcntl  
+php5-sockets
+php5-sqlite
